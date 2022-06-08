@@ -16,20 +16,17 @@ def connect_elasticsearch():
         print('Not connect!')
     return _es
 
-# Функция поиска в БД - выполение запроса к БД
-def search(es_object, search):
-    res = es_object.search(body=search)
-    return res
-
 
 # Функция удаления пробелов
 def remove_whitespace(text):
     return " ".join(text.split())
 
+
 # Функция удаления знаков припинания
 def remove_punctuation(text):
     translator = str.maketrans('', '', string.punctuation)
     return text.translate(translator)
+
 
 # Функция предствления слова в нормальной форме. Например, думающему - думать
 def normalization(text):
@@ -40,6 +37,7 @@ def normalization(text):
         text_norm += word
         text_norm += ' '
     return text_norm
+
 
 # Функция удаления цифр
 def remove_numbers(text):
@@ -54,13 +52,13 @@ def canonize(source):
     source = remove_numbers(source)
     source = remove_whitespace(source)
     source = normalization(source)
-
     return source
+
 
 #-----------------------------------Начало скрипта------------------------------------------
 # Подключение к БД
 es = connect_elasticsearch()
-search_content = es.search(index="evgeny", body={"query":{"match_all":{}}}) # Выполняем запрос с БД
+search_content = es.search(index="evgeny", body={"query":{"match_all":{}}}) # Выполняем запрос к БД
 # print(search_content)
 
 text_list = []
@@ -73,8 +71,7 @@ for text in search_content['hits']['hits']:
     text_str = str(text)
     text_list.append(canonize(text_str))  # добавляем нормализованный элемент в конец списка
 
-
-# Создание переменной с шинглами
+# Создание списка с шинглами
 # Шинглы - выделенные из статьи подпоследовательности слов
 shingles_of_texts = []
 for text in text_list:
@@ -90,7 +87,7 @@ for shingles in shingles_of_texts:
         minhash[i].update(shingle.encode('utf-8'))
     i += 1
 
-# Печать коэффициент сходства
+# Печать коэффициента сходства
 # i-столбец
 # j-строка
 # Перебор всех комбинаций
